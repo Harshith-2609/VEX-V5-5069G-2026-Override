@@ -1,0 +1,5 @@
+-I./include
+-I./.pros/include
+-std=c++17
+-Wall
+-fms-extensions

@@ -79,6 +79,7 @@ pros::MotorGroup DriveR({9, 10, 8});
 // ============================================================
 
 pros::adi::Pneumatics claw('H', true);
+pros::adi::Pneumatics wrist('G', false);
 
 // ============================================================
 // Sensors

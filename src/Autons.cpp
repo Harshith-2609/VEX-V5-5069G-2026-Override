@@ -1,6 +1,6 @@
-/*#include "Autons.h"
+#include "Autons.h"
 #include "robot-config.h"
-//#include "main.h"
+#include "main.h"
 #include "main.cpp"
 
 // ============================================================
@@ -8,14 +8,21 @@
 // ============================================================
 
 void autonRed() {
-    chassis.setPose(0, -62, 180);
-    chassis.moveToPose(-14,-48 ,90 , 1000, {.forwards = false, .lead = 0.3}, false);
+    chassis.setPose(-8, -62, 180); // set this
+    chassis.moveToPoint(-8, -65, 400); /// toggle
+    chassis.moveToPose(-14,-48 ,90 , 1000, {.forwards = false, .lead = 0.3}, false); /// allaince
     pros::delay(400);
-    lift.setTarget(CascadeLevel::MIDDLE_GOAL, 0);
+    lift.setTarget(CascadeLevel::MIDDLE_GOAL, 0); // first pin in the middle goal 
+    claw.extend();
     chassis.turnToHeading(180, 1000);
     pros::delay(500);
-    chassis.moveToPoint(-24,-60,1000);
-    chassis.turnToHeading(0, 1000);
+    chassis.moveToPose(-24,-58,0, 1000, {.forwards = true, .lead = 0}, true);
+    lift.setTarget(CascadeLevel::START);
+    chassis.moveToPoint(-24, -62, 1000);
+    claw.retract();
+    chassis.moveToPose(-24,-58,180, 1000, {.forwards = true, .lead = 0}, true);
+    
+
     
 
 
@@ -42,4 +49,4 @@ const AutonEntry AUTONS[] = {
     {"Skills",     autonSkills},
 };
 
-const int AUTON_COUNT = sizeof(AUTONS) / sizeof(AUTONS[0]);*/
+const int AUTON_COUNT = sizeof(AUTONS) / sizeof(AUTONS[0]);

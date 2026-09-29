@@ -1,4 +1,13 @@
 #include "cascade.h"
+#include "main.h"
+
+CascadeController lift(
+    cascade,                        // your existing MotorGroup
+    16,                             // "Lift" rotation sensor port
+    {0, 200, 225, 1450, 1800},    // ZERO, START, LOW, MIDDLE, HIGH
+    800.0,                           // degrees of lift per pin already in the hole
+    0.9, 0.0, 0.0                  // kP, kI, kD
+);
 
 CascadeController::CascadeController(pros::MotorGroup& motors, int rotationPort,
                                      std::vector<double> basePositions,
@@ -35,6 +44,11 @@ void CascadeController::init() {
     m_initialized = true;
 
     m_task = new pros::Task(taskFn, this, "cascadePID");
+}
+
+void CascadeController::kill() {
+    delete m_task;
+    m_task = nullptr;
 }
 
 double CascadeController::getPosition() {
@@ -88,7 +102,7 @@ void CascadeController::enable() {
 
 void CascadeController::disable() {
     m_enabled = false;
-    m_motors.move(0);
+    m_motors.brake();
 }
 
 void CascadeController::step() {

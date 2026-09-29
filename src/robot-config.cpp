@@ -71,6 +71,9 @@ pros::Motor intake(18, pros::MotorGears::blue);
 pros::MotorGroup DriveL({-21, -1, -6});
 pros::MotorGroup DriveR({9, 10, 8});
 
+pros::MotorGroup DriveL_REVERSE({21, 1, 6});
+pros::MotorGroup DriveR_REVERSE({-9, -10, -8});
+
 // Legacy / unused four-bar motor group
 //pros::MotorGroup FourBar({19, -8});
 
@@ -78,8 +81,8 @@ pros::MotorGroup DriveR({9, 10, 8});
 // Pneumatics
 // ============================================================
 
-pros::adi::Pneumatics claw('H', true);
-pros::adi::Pneumatics wrist('G', false);
+pros::adi::Pneumatics claw('A', false);
+pros::adi::Pneumatics wrist('B', false);
 
 // ============================================================
 // Sensors
@@ -91,7 +94,7 @@ pros::Imu imu(4);
 // Tracking wheel rotation sensors
 pros::Rotation trackY(-2);  // Vertical tracking wheel
 pros::Rotation trackX(-3);  // Horizontal tracking wheel
-pros::Rotation Lift(-16);  // Unused tracking wheel
+pros::Rotation Lift(16);  // Unused tracking wheel
 
 // ============================================================
 // LemLib Drivetrain Configuration
@@ -100,6 +103,24 @@ pros::Rotation Lift(-16);  // Unused tracking wheel
 lemlib::Drivetrain drivetrain(
     &DriveL,
     &DriveR,
+
+    12.5,  // Track width in inches [TUNE after robot is built]
+
+    lemlib::Omniwheel::NEW_275,  // 2.75" wheels
+
+    // Configured drivetrain wheel speed.
+    //
+    // The drivetrain motors are configured around a 600 RPM
+    // motor output, with the external gearing reducing the
+    // resulting wheel speed.
+    450,
+
+    8  // Horizontal drift [TUNE]
+);
+
+lemlib::Drivetrain drivetrainREVERSE(
+    &DriveL_REVERSE,
+    &DriveR_REVERSE,
 
     12.5,  // Track width in inches [TUNE after robot is built]
 
@@ -205,6 +226,15 @@ lemlib::ExpoDriveCurve steer_curve(
 
 lemlib::Chassis chassis(
     drivetrain,
+    lateralPID,
+    angularPID,
+    sensors,
+    &throttle_curve,
+    &steer_curve
+);
+
+lemlib::Chassis reverse(
+    drivetrainREVERSE,
     lateralPID,
     angularPID,
     sensors,

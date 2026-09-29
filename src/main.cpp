@@ -4,18 +4,22 @@
 #include "cascade.h"
 #include "GUI.h"
 #include "DSR.h"
+#include <ios>
+#include <type_traits>
+//#include "Autons.h"
+
 pros::Task* odomTask = nullptr;
 // ============================================================
 //  main.cpp — ZIPPY 2 | Override 2026-2027
 // ============================================================
 
-CascadeController lift(
-    cascade,                        // your existing MotorGroup
-    -16,                             // "Lift" rotation sensor port
-    {0.0, 400.0, 900.0, 1800.0},    // START, LOW, MIDDLE, HIGH
-    40.0,                           // degrees of lift per pin already in the hole
-    0.1, 0.0, 0.0                  // kP, kI, kD
-);
+// CascadeController lift(
+//     cascade,                        // your existing MotorGroup
+//     16,                             // "Lift" rotation sensor port
+//     {0, 200, 225, 1450, 1800},    // ZERO, START, LOW, MIDDLE, HIGH
+//     800.0,                           // degrees of lift per pin already in the hole
+//     0.9, 0.0, 0.0                  // kP, kI, kD
+// );
 
 dsr_sensor north({-6, 0}, 17);//
 dsr_sensor east({5.5, -1.5}, 13);//
@@ -28,12 +32,13 @@ dsr_chassis dsr_system(&chassis, {&north, &east, &south, &west});
 
 void odomDebug(void *) {
   master.clear();
+  Lift.set_position(0);
+  pros::delay(50);
   while (true) {
     lemlib::Pose pose = chassis.getPose();
-    master.print(0, 0, "X:%5.1f Y:%5.1f", pose.x, pose.y);
-    master.print(1, 0, "H:%5.1f", pose.theta);
-    master.print(2, 0, "X true:%5.1f Y true:%5.1f", trackX.get_position(),trackY.get_position());
-    //master.print(2, 0, "degrees%5.1f",cascade1.get_position());
+    master.print(0, 0, "X%5.1f Y%5.1f H%5.1f", pose.x, pose.y, pose.theta);
+   // master.print(2, 0, "X true:%5.1f Y true:%5.1f", trackX.get_position(),trackY.get_position());
+    // master.print(0, 0, "degrees:%5.1f",Lift.get_position()/100.0);
     pros::delay(50);
   }
 }
@@ -41,19 +46,114 @@ void initialize() {
     
     
     chassis.calibrate(true); // ~3s IMU calibration
+    //reverse.calibrate(true); // ~3s IMU calibration
 
     DriveL.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
     DriveR.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
+
+    // DriveL_REVERSE.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
+    // DriveR_REVERSE.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
+
     cascade1.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
     cascade2.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
+
     intake.set_brake_mode_all(pros::E_MOTOR_BRAKE_BRAKE);
+    
 
     
 
     chassis.setPose(0, 0, 0);
+   // reverse.setPose(0, 0, 0);
 
     odomTask = new pros::Task(odomDebug);
     //GUI_runAutonSelector();
+}
+
+void autonRed() {
+    
+    chassis.setPose(12, -61, 180); // set this
+    // chassis.moveToPoint(12, -54, 400); /// toggle
+    // chassis.moveToPoint(12, -72, 400); /// toggle
+    // chassis.moveToPoint(12, -54, 400); /// toggle
+    chassis.moveToPoint(12, -72, 400); /// toggle
+    lift.setTarget(CascadeLevel::LOW_GOAL, 0);
+    chassis.moveToPoint(12, -54, 400); 
+    chassis.moveToPose(28,-48 ,270 , 1000, {.forwards = false, .lead = 0.2}, false); /// into goal
+    pros::delay(400);
+    lift.setTarget(CascadeLevel::ZERO);
+    claw.extend();
+    pros::delay(400);
+    chassis.moveToPoint(10,-50 , 1000);
+    chassis.turnToHeading(190, 1000);
+
+    // chassis.moveToPoint(25, -38, 1000, {.forwards = false}, false);
+    lift.setTarget(CascadeLevel::START);
+    chassis.moveToPoint(21.5,-27.5, 1000, {.forwards = false, .maxSpeed = 70}, true);
+    pros::delay(1000);//680
+    //chassis.moveToPoint(22.6,-23, 1000, {.forwards = false, .maxSpeed = 50}, false);
+    claw.retract(); /// stack one grab
+    pros::delay(500);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 2);
+    chassis.swingToHeading(315, DriveSide ::RIGHT, 1000);
+    chassis.moveToPoint(19.5,-45, 1000, {.forwards = false}, false);
+    //chassis.turnToHeading(45, 1000);
+    lemlib::Pose pose = chassis.getPose();
+    float x = pose.x;
+    float y = pose.y;
+    // chassis.moveToPoint(18, -43, 1000, {.forwards = false}, false);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 0);
+    pros::delay(200);
+    claw.extend();
+    pros::delay(300);
+    chassis.swingToHeading(45, DriveSide::RIGHT, 1000);
+    chassis.turnToHeading(-63, 1000);
+    lift.setTarget(CascadeLevel::START, 0);
+    chassis.moveToPoint(41, -43.5, 1000, {.forwards = false, .minSpeed = 70}, true);
+    //extention
+    // pros::delay(800);
+    // claw.extend();
+    // chassis.turnToHeading(75, 1000);
+    // chassis.moveToPoint(30.4, -45, 1000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // /////////////////////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////////////////////
+    // chassis.moveToPoint(0, -45, 1000, {.forwards = true}, false);
+    // chassis.turnToHeading(300, 1000, {}, false);
+    // chassis.moveToPoint(21, -62, 1000, {.forwards = false}, false);
+    //chassis.moveToPose(24, -64, 0, 3000, {.forwards = false, .minSpeed = 40}, false);
+    // lift.setTarget(CascadeLevel::START);
+    // chassis.turnToHeading(45, 1000);
+    // chassis.moveToPoint(-33.6, -20.6, 1000, {.forwards = false, .maxSpeed = 70}, true);
+    // pros::delay(400);
+    // claw.retract();
+    // pros::delay(400);
+    // lift.setTarget(CascadeLevel::LOW_GOAL, 3);
+    // chassis.turnToHeading(63, 1000);
+    // pros::delay(400);
+    //we need to coordinates for going back into goal
+
+
+
+    
+
+
+    // TODO: build the left-side routine once the robot exists
+    // and field coordinates are measured.
 }
 
 void disabled() {
@@ -69,14 +169,17 @@ void autonomous() {
     lift.init();
 
 
-    dsr_system.perform_dsr_init(POS_POS, 90);
+    autonRed();
 
 
-    //chassis.turnToHeading(90, 1000);
+    // chassis.turnToHeading(90, 1000);
+    // chassis.turnToHeading(180, 1000);
+    // chassis.turnToHeading(0, 1000);
+
+
+
     //chassis.moveToPoint(0.0, 24.0, 1000);
-    //pros::delay(1000);
-    //chassis.turnToHeading(180, 1000);
-    //pros::delay(1000);
+
     //chassis.moveToPoint(0.0, 0.0, 1000);
     // if (selectedAuton >= 0 && selectedAuton < AUTON_COUNT) {
     //     AUTONS[selectedAuton].run();
@@ -86,7 +189,7 @@ void autonomous() {
     // chassis.moveToPose(...);
  
     // First goal, hole is empty
-    //lift.setTarget(CascadeLevel::MIDDLE_GOAL, 0);
+    //lift.setTarget(CascadeLevel::MIDDLE_GOAL, 1);
     // lift.waitUntilSettled();
     // ... place pin ...
 
@@ -101,11 +204,19 @@ void autonomous() {
 }
 
 void opcontrol() {
+    odomTask = new pros::Task(odomDebug);
+
     //GUI_showDebugScreen();
 
     new pros::Task(DriveTrainControls);
     new pros::Task(CascadeControls);
     new pros::Task(IntakeControls);
+    new pros::Task(wristControls);
+    new pros::Task(ClawControls);
+
+    //macros right now they work but interfere with CascadeControls
+    // new pros::Task(AfterintakeMACRO);
+    // new pros::Task(matchloaderhight);
 
 
 

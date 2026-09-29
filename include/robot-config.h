@@ -22,6 +22,8 @@ extern pros::Motor R3;
 // Drivetrain motor groups
 extern pros::MotorGroup DriveL;
 extern pros::MotorGroup DriveR;
+extern pros::MotorGroup DriveL_REVERSE;
+extern pros::MotorGroup DriveR_REVERSE;
 
 // ============================================================
 // Mechanism Motors
@@ -46,7 +48,7 @@ extern pros::Motor intake;
 // ============================================================
 
 extern pros::adi::Pneumatics claw;
-
+extern pros::adi::Pneumatics wrist;
 // ============================================================
 // Sensors
 // ============================================================
@@ -67,3 +69,4 @@ extern lemlib::ExpoDriveCurve steer_curve;
 
 // LemLib chassis
 extern lemlib::Chassis chassis;
+extern lemlib::Chassis reverse;

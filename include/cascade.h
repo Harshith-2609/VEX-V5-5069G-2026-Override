@@ -6,13 +6,16 @@
 #include "pros/rotation.hpp"
 #include "pros/rtos.hpp"
 
+
+
 // Add or remove entries here to match however many stopping points you
 // actually want. Keep COUNT last -- it auto-sizes the position arrays.
 enum class CascadeLevel {
-    START  = 0,
-    LOW_GOAL    = 1,
-    MIDDLE_GOAL = 2,
-    HIGH_GOAL   = 3,
+    ZERO = 0,
+    START  = 1,
+    LOW_GOAL    = 2,
+    MIDDLE_GOAL = 3,
+    HIGH_GOAL   = 4,
     COUNT
 };
 
@@ -39,6 +42,7 @@ public:
     // Call from initialize(). Resets the sensor, sets brake modes, and
     // starts the PID task. Safe to call once; repeat calls are ignored.
     void init();
+    void kill();
     void inchesTOdegrees(double myinches);
 
     // Go to `level` assuming `pinsAlreadyInHole` pins are stacked there.
@@ -84,3 +88,6 @@ private:
     static constexpr double INTEGRAL_LIMIT = 20.0;
     static constexpr double MAX_OUTPUT     = 127.0;
 };
+
+
+extern CascadeController lift;

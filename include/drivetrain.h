@@ -3,8 +3,8 @@
 void DriveTrainControls();
 void ClawControls();
 void wristControls();
-void CascadeControls();//sidhishellacool
+void CascadeControls();
 void IntakeControls();
-// void matchloaderhight();
-// void AfterintakeMACRO();
-// void intakeMACRO();
+void matchloaderhight();
+void AfterintakeMACRO();
+//void intakeMACRO();

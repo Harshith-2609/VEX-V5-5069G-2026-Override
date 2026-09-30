@@ -196,44 +196,57 @@ void DriveTrainControls() {
         pros::delay(10);
     }
 }
-
-
 void CascadeControls() {
-
     while (true) {
+        const bool up   = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        const bool down = master.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-
-        if (master.get_digital(
-                pros::E_CONTROLLER_DIGITAL_L1)) {
-
-            // Give motor control back to driver
-            lift.disable();
-
-            cascade.move(127);
+        if (up || down) {
+            if (lift.isEnabled()) lift.disable();   // cancels any running macro, once
+            cascade.move(up ? 127 : -127);
+        } else if (!lift.isEnabled()) {
+            cascade.brake();
         }
-
-
-        else if (master.get_digital(
-                     pros::E_CONTROLLER_DIGITAL_L2)) {
-
-            // Give motor control back to driver
-            lift.disable();
-
-            cascade.move(-127);
-        }
-
-
-        else {
-
-            if (!lift.isEnabled()) {
-                cascade.brake();
-            }
-        }
-
-
         pros::delay(10);
     }
 }
+
+// void CascadeControls() {
+
+//     while (true) {
+
+
+//         if (master.get_digital(
+//                 pros::E_CONTROLLER_DIGITAL_L1)) {
+
+//             // Give motor control back to driver
+//             lift.disable();
+
+//             cascade.move(127);
+//         }
+
+
+//         else if (master.get_digital(
+//                      pros::E_CONTROLLER_DIGITAL_L2)) {
+
+//             // Give motor control back to driver
+//             lift.disable();
+
+//             cascade.move(-127);
+//         }
+
+
+//         else {
+
+//             if (!lift.isEnabled()) {
+//                 cascade.brake();
+//             }
+//         }
+
+
+//         pros::delay(10);
+//     }
+// }
 
 
 
@@ -265,10 +278,9 @@ void IntakeControls() {
     }
 }
 
+static bool claw1 = false;
 
 void ClawControls() {
-
-    static bool claw1 = false;
 
     while (true) {
 
@@ -293,10 +305,10 @@ void ClawControls() {
     }
 }
 
-
+static bool wrist1 = false;
 void wristControls() {
 
-    static bool wrist1 = false;
+    
 
     while (true) {
 
@@ -329,14 +341,10 @@ void matchloaderhight() {
         if (master.get_digital_new_press(
                 pros::E_CONTROLLER_DIGITAL_B)) {
 
-            // Set PID target
             lift.setTarget(CascadeLevel::START);
-
-            // Enable PID
             lift.enable();
-
             // Extend claw
-            claw.extend();
+            //claw.extend();
         }
 
 
@@ -350,14 +358,16 @@ void AfterintakeMACRO() {
     while (true) {
 
         if (master.get_digital_new_press(
-                pros::E_CONTROLLER_DIGITAL_B)) {
+                pros::E_CONTROLLER_DIGITAL_X)) {
 
-            claw.retract();
+            claw1 = false;
 
-            wrist.retract();
+            wrist1 = true;
+
+            pros::delay(500);
 
             // Set PID target
-            lift.setTarget(CascadeLevel::START);
+            lift.setTarget(CascadeLevel::LOW_GOAL);
 
             // Enable PID
             lift.enable();

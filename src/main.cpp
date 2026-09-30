@@ -4,8 +4,6 @@
 #include "cascade.h"
 #include "GUI.h"
 #include "DSR.h"
-#include <ios>
-#include <type_traits>
 //#include "Autons.h"
 
 pros::Task* odomTask = nullptr;
@@ -43,7 +41,7 @@ void odomDebug(void *) {
   }
 }
 void initialize() {
-    
+    lift.init();
     
     chassis.calibrate(true); // ~3s IMU calibration
     //reverse.calibrate(true); // ~3s IMU calibration
@@ -71,6 +69,7 @@ void initialize() {
 
 void autonRed() {
     
+
     chassis.setPose(12, -61, 180); // set this
     // chassis.moveToPoint(12, -54, 400); /// toggle
     // chassis.moveToPoint(12, -72, 400); /// toggle
@@ -79,36 +78,44 @@ void autonRed() {
     lift.setTarget(CascadeLevel::LOW_GOAL, 0);
     chassis.moveToPoint(12, -54, 400); 
     chassis.moveToPose(28,-48 ,270 , 1000, {.forwards = false, .lead = 0.2}, false); /// into goal
-    pros::delay(400);
+    pros::delay(200);
     lift.setTarget(CascadeLevel::ZERO);
-    claw.extend();
     pros::delay(400);
+    claw.extend();
     chassis.moveToPoint(10,-50 , 1000);
     chassis.turnToHeading(190, 1000);
 
     // chassis.moveToPoint(25, -38, 1000, {.forwards = false}, false);
     lift.setTarget(CascadeLevel::START);
-    chassis.moveToPoint(21.5,-27.5, 1000, {.forwards = false, .maxSpeed = 70}, true);
-    pros::delay(1000);//680
-    //chassis.moveToPoint(22.6,-23, 1000, {.forwards = false, .maxSpeed = 50}, false);
-    claw.retract(); /// stack one grab
+    chassis.moveToPoint(21,-28.5, 1000, {.forwards = false, .maxSpeed = 70}, true);
+    pros::delay(850);//680
+    claw.retract(); //////////////////////////////////////////////////////////// stack one grab
     pros::delay(500);
     lift.setTarget(CascadeLevel::LOW_GOAL, 2);
     chassis.swingToHeading(315, DriveSide ::RIGHT, 1000);
-    chassis.moveToPoint(19.5,-45, 1000, {.forwards = false}, false);
+    chassis.moveToPoint(21.5,-46, 1000, {.forwards = false}, false);/////////to goal
     //chassis.turnToHeading(45, 1000);
     lemlib::Pose pose = chassis.getPose();
     float x = pose.x;
     float y = pose.y;
     // chassis.moveToPoint(18, -43, 1000, {.forwards = false}, false);
-    lift.setTarget(CascadeLevel::LOW_GOAL, 0);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 1);
     pros::delay(200);
     claw.extend();
     pros::delay(300);
     chassis.swingToHeading(45, DriveSide::RIGHT, 1000);
-    chassis.turnToHeading(-63, 1000);
+    chassis.turnToHeading(285, 1000);
     lift.setTarget(CascadeLevel::START, 0);
-    chassis.moveToPoint(41, -43.5, 1000, {.forwards = false, .minSpeed = 70}, true);
+    chassis.moveToPoint(43, -43, 1000, {.forwards = false, .minSpeed = 70}, true);
+    pros::delay(800);
+    claw.retract();
+    pros::delay(500);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 2);
+    chassis.turnToHeading(80, 1000);
+    chassis.moveToPoint(32, -47, 1000, {.forwards = false, .minSpeed = 70}, false);
+    pros::delay(500);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 1);
+
     //extention
     // pros::delay(800);
     // claw.extend();
@@ -166,6 +173,7 @@ void competition_initialize() {
 
 void autonomous() {
     odomTask = new pros::Task(odomDebug);
+    lift.enable();
     lift.init();
 
 
@@ -215,8 +223,8 @@ void opcontrol() {
     new pros::Task(ClawControls);
 
     //macros right now they work but interfere with CascadeControls
-    // new pros::Task(AfterintakeMACRO);
-    // new pros::Task(matchloaderhight);
+    new pros::Task(AfterintakeMACRO);
+    new pros::Task(matchloaderhight);
 
 
 

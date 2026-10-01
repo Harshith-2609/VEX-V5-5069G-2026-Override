@@ -219,10 +219,10 @@ void opcontrol() {
     new pros::Task(DriveTrainControls);
     new pros::Task(CascadeControls);
     new pros::Task(IntakeControls);
-    new pros::Task(wristControls);
+    //new pros::Task(wristControls);
     new pros::Task(ClawControls);
 
-    //macros right now they work but interfere with CascadeControls
+    //macros right now they work but wrist aint working got to fix boi
     new pros::Task(AfterintakeMACRO);
     new pros::Task(matchloaderhight);
 

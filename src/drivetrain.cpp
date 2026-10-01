@@ -214,11 +214,7 @@ void matchloaderhight() {
 }
 
 
-//test the lift.enable - if not take out "m_enabled = true;" in settarget
-
-//makesure the toggle works now
-// test wrist and claw
-//if all else dont work test setwrist and setclaw
+// finally it fucking works
 
 
 static bool mac = false;
@@ -231,7 +227,6 @@ void AfterintakeMACRO() {
             if (mac) { ///1st part of the macro
 
                 lift.setTarget(CascadeLevel::LOW_GOAL, 0);
-                //lift.enable();
                 lift.waitUntilSettled(15, 800);
                 pros::delay(200);
 
@@ -241,38 +236,17 @@ void AfterintakeMACRO() {
                 wrist.extend();
 
                 lift.setTarget(CascadeLevel::ZERO, 0);
-                //lift.enable();
-
             }
             else { ////2nd part of the macro
 
-                //lift.enable();
-
-                // lift.waitUntilSettled(
-                //     15,
-                //     1500
-                // );
-
                 claw.retract();
                 claw1 = false;
+
                 pros::delay(500);
 
                 lift.setTarget( CascadeLevel::LOW_GOAL, 1);
 
                 wrist.retract();
-                //wrist1 = true;
-
-                // lift.setTarget(
-                //     CascadeLevel::ZERO, 0
-                // );
-
-                // //lift.enable();
-
-                // lift.waitUntilSettled(
-                //     15,
-                //     1500
-                // );
-
             }
         }
 

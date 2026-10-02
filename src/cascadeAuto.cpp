@@ -1,8 +1,31 @@
 #include "cascade.h"
+
+#include "pros/rtos.hpp"
+#include "robot-config.h"
 #include "main.h"
 
-CascadeController lift(cascade, 16, {0, 200, 225, 1450, 1800}, 810.0, 0.9, 0.0,
-                       0.0);
+
+double CascadeController::getPosition() {
+  if (!m_initialized || m_rotation == nullptr) {
+    return 0.0;
+  }
+
+  return m_rotation->get_position() / 100.0;
+}
+
+
+CascadeController lift(cascade, 16, {
+  0,
+  -221, 
+  4,
+  205, /// CONTROLLER cup and pin height TUNE
+  200, 
+  225,// low goal
+  325, // SOMETHING
+  1450,
+  1800
+}
+  , 810.0, 0.9, 0.0, 0.0);
 
 CascadeController::CascadeController(pros::MotorGroup &motors, int rotationPort,
                                      std::vector<double> basePositions,
@@ -54,14 +77,6 @@ void CascadeController::disable() {
 }
 
 bool CascadeController::isEnabled() { return m_enabled; }
-
-double CascadeController::getPosition() {
-  if (!m_initialized || m_rotation == nullptr) {
-    return 0.0;
-  }
-
-  return m_rotation->get_position() / 100.0;
-}
 
 double CascadeController::getTarget() { return m_target; }
 

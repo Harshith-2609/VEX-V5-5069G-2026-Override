@@ -1,5 +1,6 @@
 #include "main.h"
 #include "drivetrain.h"
+#include "pros/rtos.hpp"
 #include "robot-config.h"
 #include "cascade.h"
 #include "GUI.h"
@@ -34,13 +35,14 @@ void odomDebug(void *) {
   pros::delay(50);
   while (true) {
     lemlib::Pose pose = chassis.getPose();
-    master.print(0, 0, "X%5.1f Y%5.1f H%5.1f", pose.x, pose.y, pose.theta);
+    //master.print(0, 0, "X%5.1f Y%5.1f H%5.1f", pose.x, pose.y, pose.theta);
    // master.print(2, 0, "X true:%5.1f Y true:%5.1f", trackX.get_position(),trackY.get_position());
-    // master.print(0, 0, "degrees:%5.1f",Lift.get_position()/100.0);
+    master.print(0, 0, "degrees:%5.1f",Lift.get_position()/100.0);
     pros::delay(50);
   }
 }
 void initialize() {
+
     lift.init();
     
     chassis.calibrate(true); // ~3s IMU calibration
@@ -70,14 +72,17 @@ void initialize() {
 void autonRed() {
     
 
-    chassis.setPose(12, -61, 180); // set this
-    // chassis.moveToPoint(12, -54, 400); /// toggle
-    // chassis.moveToPoint(12, -72, 400); /// toggle
-    // chassis.moveToPoint(12, -54, 400); /// toggle
-    chassis.moveToPoint(12, -72, 400); /// toggle
+    chassis.setPose(12, -62, 180); // set this
+    intake.move(127);
+    chassis.moveToPoint(12, -54, 400, {.forwards = false}, false); /// toggle
+    chassis.moveToPoint(12, -72, 400, {.forwards = true}, false); /// toggle
+    intake.brake();
+    chassis.moveToPoint(12, -54, 400, {.forwards = false}, false); /// toggle
+    chassis.moveToPoint(12, -72, 400, {.forwards = true}, false); /// toggle
     lift.setTarget(CascadeLevel::LOW_GOAL, 0);
     chassis.moveToPoint(12, -54, 400); 
-    chassis.moveToPose(28,-48 ,270 , 1000, {.forwards = false, .lead = 0.2}, false); /// into goal
+    chassis.moveToPose(28,-48 ,270 , 850, {.forwards = false, .lead = 0.2}, false); /// into goal
+    // chassis.moveToPoint(26, -48, 400);
     pros::delay(200);
     lift.setTarget(CascadeLevel::ZERO);
     pros::delay(400);
@@ -87,17 +92,119 @@ void autonRed() {
 
     // chassis.moveToPoint(25, -38, 1000, {.forwards = false}, false);
     lift.setTarget(CascadeLevel::START);
-    chassis.moveToPoint(21,-28.5, 1000, {.forwards = false, .maxSpeed = 70}, true);
-    pros::delay(850);//680
+    ///TUNE
+    chassis.moveToPoint(22,-27, 1000, {.forwards = false, .maxSpeed = 55}, true);
+    ////TUNE
+    pros::delay(1500);//680
     claw.retract(); //////////////////////////////////////////////////////////// stack one grab
     pros::delay(500);
     lift.setTarget(CascadeLevel::LOW_GOAL, 2);
     chassis.swingToHeading(315, DriveSide ::RIGHT, 1000);
-    chassis.moveToPoint(21.5,-46, 1000, {.forwards = false}, false);/////////to goal
-    //chassis.turnToHeading(45, 1000);
-    lemlib::Pose pose = chassis.getPose();
-    float x = pose.x;
-    float y = pose.y;
+    chassis.moveToPoint(21.5,-46.5, 1050, {.forwards = false}, false);/////////to goal
+
+    // // chassis.moveToPoint(18, -43, 1000, {.forwards = false}, false);
+    // lift.setTarget(CascadeLevel::LOW_GOAL, 1);
+    // pros::delay(200);
+    // claw.extend();
+    // pros::delay(300);
+    chassis.swingToHeading(45, DriveSide::RIGHT, 1000);
+    // chassis.turnToHeading(285, 1000);
+    lift.setTarget(CascadeLevel::ZERO, 0);
+    // ///////TUNE
+    // chassis.moveToPoint(41.5, -46, 900, {.forwards = false, .minSpeed = 35}, true);
+    // ///////tUNE
+    // pros::delay(1000);
+    // claw.retract();
+    // pros::delay(500);
+    // lift.setTarget(CascadeLevel::LOW_GOAL, 2);
+    // chassis.turnToHeading(80, 1000);
+    // chassis.moveToPoint(32, -47, 1000, {.forwards = false, .minSpeed = 70}, false);
+    // pros::delay(500);
+    // lift.setTarget(CascadeLevel::LOW_GOAL, 1);
+    // claw.extend();
+    // chassis.moveToPoint(26, -54, 1000);
+    // lift.setTarget(CascadeLevel::ZERO);
+
+    //extention
+    // pros::delay(800);
+    // claw.extend();
+    // chassis.turnToHeading(75, 1000);
+    // chassis.moveToPoint(30.4, -45, 1000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // /////////////////////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////////////////////
+    // chassis.moveToPoint(0, -45, 1000, {.forwards = true}, false);
+    // chassis.turnToHeading(300, 1000, {}, false);
+    // chassis.moveToPoint(21, -62, 1000, {.forwards = false}, false);
+    //chassis.moveToPose(24, -64, 0, 3000, {.forwards = false, .minSpeed = 40}, false);
+    // lift.setTarget(CascadeLevel::START);
+    // chassis.turnToHeading(45, 1000);
+    // chassis.moveToPoint(-33.6, -20.6, 1000, {.forwards = false, .maxSpeed = 70}, true);
+    // pros::delay(400);
+    // claw.retract();
+    // pros::delay(400);
+    // lift.setTarget(CascadeLevel::LOW_GOAL, 3);
+    // chassis.turnToHeading(63, 1000);
+    // pros::delay(400);
+    //we need to coordinates for going back into goal
+
+
+
+    
+
+
+    // TODO: build the left-side routine once the robot exists
+    // and field coordinates are measured.
+}
+void autonRednew() {
+    
+
+    chassis.setPose(12, -62, 180); // set this
+    intake.move(127);
+    chassis.moveToPoint(12, -54, 400, {.forwards = false}, false); /// toggle
+    chassis.moveToPoint(12, -72, 400, {.forwards = true}, false); /// toggle
+    intake.brake();
+    chassis.moveToPoint(12, -54, 400, {.forwards = false}, false); /// toggle
+    chassis.moveToPoint(12, -72, 400, {.forwards = true}, false); /// toggle
+    lift.setTarget(CascadeLevel::LOW_GOAL, 0);
+    chassis.moveToPoint(12, -54, 400); 
+    chassis.moveToPose(28,-48 ,270 , 850, {.forwards = false, .lead = 0.2}, false); /// into goal
+    // chassis.moveToPoint(26, -48, 400);
+    pros::delay(200);
+    lift.setTarget(CascadeLevel::ZERO);
+    pros::delay(400);
+    claw.extend();
+    pros::delay(100);
+    chassis.moveToPoint(10,-50 , 1000);
+    chassis.turnToHeading(190, 1000);
+
+    // chassis.moveToPoint(25, -38, 1000, {.forwards = false}, false);
+    lift.setTarget(CascadeLevel::START);
+    ///TUNE
+    chassis.moveToPoint(24,-27, 1200, {.forwards = false, .maxSpeed = 55}, true);
+    ////TUNE
+    pros::delay(1350);//680
+    claw.retract(); //////////////////////////////////////////////////////////// stack one grab
+    pros::delay(500);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 2);
+    chassis.swingToHeading(315, DriveSide ::RIGHT, 1000);
+    chassis.moveToPoint(22,-46, 1050, {.forwards = false}, false);/////////to goal
+
     // chassis.moveToPoint(18, -43, 1000, {.forwards = false}, false);
     lift.setTarget(CascadeLevel::LOW_GOAL, 1);
     pros::delay(200);
@@ -106,15 +213,18 @@ void autonRed() {
     chassis.swingToHeading(45, DriveSide::RIGHT, 1000);
     chassis.turnToHeading(285, 1000);
     lift.setTarget(CascadeLevel::START, 0);
-    chassis.moveToPoint(43, -43, 1000, {.forwards = false, .minSpeed = 70}, true);
-    pros::delay(800);
+    ///////TUNE
+    chassis.moveToPoint(44, -47, 800, {.forwards = false, .minSpeed = 35}, true);
+    ///////tUNE
+    pros::delay(1200);
     claw.retract();
     pros::delay(500);
-    lift.setTarget(CascadeLevel::LOW_GOAL, 2);
-    chassis.turnToHeading(80, 1000);
-    chassis.moveToPoint(32, -47, 1000, {.forwards = false, .minSpeed = 70}, false);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 1); // was for second arg "2"
+    chassis.turnToHeading(170, 1000);
+    chassis.moveToPoint(50, -29, 1000, {.forwards = false, .minSpeed = 70}, false);
     pros::delay(500);
-    lift.setTarget(CascadeLevel::LOW_GOAL, 1);
+    lift.setTarget(CascadeLevel::LOW_GOAL, 0);
+    claw.extend();
 
     //extention
     // pros::delay(800);
@@ -177,7 +287,7 @@ void autonomous() {
     lift.init();
 
 
-    autonRed();
+    autonRednew();
 
 
     // chassis.turnToHeading(90, 1000);

@@ -1,8 +1,8 @@
 #include "drivetrain.h"
-#include "pros/misc.h"
-#include "robot-config.h"
 #include "cascade.h"
-
+#include "pros/misc.h"
+#include "pros/rtos.hpp"
+#include "robot-config.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,120 +12,110 @@ static constexpr double JOYSTICK_DEADBAND = 4.0;
 static constexpr double EXPO_CUTOFF = 19.0;
 static constexpr std::uint32_t DRIVE_TOGGLE_HOLD_MS = 1200;
 
-
 double linearJoystick(double input) {
-    if (std::fabs(input) < JOYSTICK_DEADBAND) {
-        return 0.0;
-    }
+  if (std::fabs(input) < JOYSTICK_DEADBAND) {
+    return 0.0;
+  }
 
-    return input;
+  return input;
 }
 
 int joystickToVoltage(double joystick) {
-    joystick = std::clamp(joystick, -127.0, 127.0);
+  joystick = std::clamp(joystick, -127.0, 127.0);
 
-    return static_cast<int>(
-        joystick * 12000.0 / 127.0
-    );
+  return static_cast<int>(joystick * 12000.0 / 127.0);
 }
 
 void arcadeDrive() {
-    double forward =
-        master.get_analog(
-            pros::E_CONTROLLER_ANALOG_LEFT_Y
-        );
+  double forward = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 
-    double turn =
-        master.get_analog(
-            pros::E_CONTROLLER_ANALOG_RIGHT_X
-        );
+  double turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-    if (std::fabs(forward) < EXPO_CUTOFF &&
-        std::fabs(turn) < EXPO_CUTOFF) {
+  if (std::fabs(forward) < EXPO_CUTOFF && std::fabs(turn) < EXPO_CUTOFF) {
 
-        chassis.arcade(forward, turn);
-        return;
-    }
+    chassis.arcade(forward, turn);
+    return;
+  }
 
-    forward = linearJoystick(forward);
-    turn = linearJoystick(turn);
+  forward = linearJoystick(forward);
+  turn = linearJoystick(turn);
 
-    double leftPower =
-        std::clamp(
-            forward + turn,
-            -127.0,
-            127.0
-        );
+  double leftPower = std::clamp(forward + turn, -127.0, 127.0);
 
-    double rightPower =
-        std::clamp(
-            forward - turn,
-            -127.0,
-            127.0
-        );
+  double rightPower = std::clamp(forward - turn, -127.0, 127.0);
 
-    DriveL.move_voltage(
-        joystickToVoltage(leftPower)
-    );
+  DriveL.move_voltage(joystickToVoltage(leftPower));
 
-    DriveR.move_voltage(
-        joystickToVoltage(rightPower)
-    );
+  DriveR.move_voltage(joystickToVoltage(rightPower));
 }
 
 void tankDrive() {
-    double left =
-        master.get_analog(
-            pros::E_CONTROLLER_ANALOG_LEFT_Y
-        );
+  double left = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 
-    double right =
-        master.get_analog(
-            pros::E_CONTROLLER_ANALOG_RIGHT_Y
-        );
+  double right = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
-    left = linearJoystick(left);
-    right = linearJoystick(right);
+  left = linearJoystick(left);
+  right = linearJoystick(right);
 
-    DriveL.move_voltage(
-        joystickToVoltage(left)
-    );
+  DriveL.move_voltage(joystickToVoltage(left));
 
-    DriveR.move_voltage(
-        joystickToVoltage(right)
-    );
+  DriveR.move_voltage(joystickToVoltage(right));
 }
 
 void DriveTrainControls() {
-    while (true) {
+  while (true) {
 
-        tankDrive();
+    tankDrive();
 
-        pros::delay(10);
-    }
+    pros::delay(10);
+  }
 }
+
+// void CascadeControls() {
+//     while (true) {
+//         const bool up =
+//             master.get_digital(
+//                 pros::E_CONTROLLER_DIGITAL_L1
+//             );
+
+//         const bool down =
+//             master.get_digital(
+//                 pros::E_CONTROLLER_DIGITAL_L2
+//             );
+
+//         if (up || down) {
+//             if (lift.isEnabled()) {
+//                 lift.disable();
+//             }
+
+//             cascade.move(
+//                 up ? 127 : -127
+//             );
+//         } else if (!lift.isEnabled()) {
+//             cascade.brake();
+//         }
+
+//         pros::delay(10);
+//     }
+// }
+
+static volatile bool IMlosingmyfuckingmind = false;   // must be above CascadeControls AND ClawControls
 
 void CascadeControls() {
     while (true) {
-        const bool up =
-            master.get_digital(
-                pros::E_CONTROLLER_DIGITAL_L1
-            );
 
-        const bool down =
-            master.get_digital(
-                pros::E_CONTROLLER_DIGITAL_L2
-            );
+        const bool up   = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        const bool down = master.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-        if (up || down) {
-            if (lift.isEnabled()) {
-                lift.disable();
-            }
+        if (IMlosingmyfuckingmind) {
+            // dont touch my fricking motors u bum
+        } else if (up || down) {
 
-            cascade.move(
-                up ? 127 : -127
-            );
+            if (lift.isEnabled()) lift.disable();
+            cascade.move(up ? 127 : -127);
+            
         } else if (!lift.isEnabled()) {
+
             cascade.brake();
         }
 
@@ -134,46 +124,49 @@ void CascadeControls() {
 }
 
 void IntakeControls() {
-    while (true) {
-        if (master.get_digital(
-                pros::E_CONTROLLER_DIGITAL_R2)) {
+  while (true) {
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
 
-            intake.move(80);
+      intake.move(127);
 
-        } else if (master.get_digital(
-                       pros::E_CONTROLLER_DIGITAL_R1)) {
+    } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
 
-            intake.move(-127);
+      intake.move(-127);
 
-        } else {
+    } else {
 
-            intake.brake();
-        }
-
-        pros::delay(10);
+      intake.brake();
     }
+
+    pros::delay(10);
+  }
 }
-
-
 
 static bool claw1 = false;
 
 void ClawControls() {
-    while (true) {
-        if (master.get_digital_new_press(
-                pros::E_CONTROLLER_DIGITAL_Y)) {
+  while (true) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
 
-            claw1 = !claw1;
+      claw1 = !claw1;
 
-            if (claw1) {
-                claw.extend();
-            } else {
-                claw.retract();
-            }
-        }
+      if (claw1) {
+        claw.extend();
 
-        pros::delay(10);
+      } else {
+        claw.retract();
+        pros::delay(200);
+        IMlosingmyfuckingmind = true;
+        lift.disable();
+        cascade.move(80); // use move() instead of move_velocity()
+        pros::delay(150);
+        cascade.brake();
+        IMlosingmyfuckingmind = false;
+      }
     }
+
+    pros::delay(10);
+  }
 }
 
 // static bool wrist1 = false;
@@ -196,61 +189,55 @@ void ClawControls() {
 //     }
 // }
 
-
 void matchloaderhight() {
-    while (true) {
-        if (master.get_digital_new_press(
-                pros::E_CONTROLLER_DIGITAL_B)) {
+  while (true) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
 
-            lift.setTarget(
-                CascadeLevel::START
-            );
+      lift.setTarget(CascadeLevel::MATCHLOAD);
 
-            //lift.enable();
-        }
-
-        pros::delay(10);
+      // lift.enable();
     }
-}
 
+    pros::delay(10);
+  }
+}
 
 // finally it fucking works
 
-
 static bool mac = false;
 void AfterintakeMACRO() {
-    while (true) {
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+  while (true) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
 
-            mac = !mac;
+      mac = !mac;
 
-            if (mac) { ///1st part of the macro
+      if (mac) { /// 1st part of the macro
 
-                lift.setTarget(CascadeLevel::LOW_GOAL, 0);
-                lift.waitUntilSettled(15, 800);
-                pros::delay(200);
+        lift.setTarget(CascadeLevel::SOMTHING, 0);
+        lift.waitUntilSettled(15, 800);
 
-                claw.extend();
-                claw1 = true;
+        claw.extend();
+        claw1 = true;
 
-                wrist.extend();
+        wrist.extend();
 
-                lift.setTarget(CascadeLevel::ZERO, 0);
-            }
-            else { ////2nd part of the macro
+        pros::delay(400);
 
-                claw.retract();
-                claw1 = false;
+        lift.setTarget(CascadeLevel::ZERO, 0);
+        lift.waitUntilSettled(15, 800);
+      } else { ////2nd part of the macro
 
-                pros::delay(500);
+        claw.retract();
+        claw1 = false;
 
-                lift.setTarget( CascadeLevel::LOW_GOAL, 1);
+        pros::delay(500);
 
-                wrist.retract();
-            }
-        }
+        lift.setTarget(CascadeLevel::LOW_GOAL, 1);
 
-        pros::delay(10);
+        wrist.retract();
+      }
     }
-}
 
+    pros::delay(10);
+  }
+}

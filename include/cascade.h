@@ -5,16 +5,20 @@
 #include <cmath>
 #include <algorithm>
 #include <utility>
+
+//just dont worry about this
 enum class CascadeLevel {
-    ZERO,
-    ZERO_DRIVER,
-    LOW_GOAL_DRIVER,
-    MATCHLOAD,///221
-    START,
-    LOW_GOAL,
-    SOMTHING,
-    MIDDLE_GOAL,
-    HIGH_GOAL,
+    FUCK_ITAIGNTWORKING,//0
+    NEGATIVE,//1
+    ZERO,  //2
+    ZERO_DRIVER,//3
+    LOW_GOAL_DRIVER, //4
+    MATCHLOAD,///221 //5
+    START, //6
+    LOW_GOAL, //7
+    SOMTHING, //8
+    MIDDLE_GOAL, //9
+    HIGH_GOAL, //10
     COUNT
 };
 

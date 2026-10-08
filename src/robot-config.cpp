@@ -71,8 +71,6 @@ pros::Motor intake(18, pros::MotorGears::blue);
 pros::MotorGroup DriveL({-21, -1, -6});
 pros::MotorGroup DriveR({9, 10, 8});
 
-pros::MotorGroup DriveL_REVERSE({21, 1, 6});
-pros::MotorGroup DriveR_REVERSE({-9, -10, -8});
 
 // Legacy / unused four-bar motor group
 //pros::MotorGroup FourBar({19, -8});
@@ -83,6 +81,8 @@ pros::MotorGroup DriveR_REVERSE({-9, -10, -8});
 
 pros::adi::Pneumatics claw('A', false);
 pros::adi::Pneumatics wrist('B', false);
+pros::adi::Pneumatics flip('c', false);
+
 
 // ============================================================
 // Sensors
@@ -103,24 +103,6 @@ pros::Rotation Lift(16);  // Unused tracking wheel
 lemlib::Drivetrain drivetrain(
     &DriveL,
     &DriveR,
-
-    12.5,  // Track width in inches [TUNE after robot is built]
-
-    lemlib::Omniwheel::NEW_275,  // 2.75" wheels
-
-    // Configured drivetrain wheel speed.
-    //
-    // The drivetrain motors are configured around a 600 RPM
-    // motor output, with the external gearing reducing the
-    // resulting wheel speed.
-    450,
-
-    8  // Horizontal drift [TUNE]
-);
-
-lemlib::Drivetrain drivetrainREVERSE(
-    &DriveL_REVERSE,
-    &DriveR_REVERSE,
 
     12.5,  // Track width in inches [TUNE after robot is built]
 
@@ -205,6 +187,42 @@ lemlib::ControllerSettings angularPID(
 );
 
 // ============================================================
+// LemLib Lateral PID
+// ============================================================
+// Values are initial tuning values and should be tuned on the
+// completed robot.
+
+lemlib::ControllerSettings lateralPID2(
+    9,   // kP
+    0,    // kI
+    2,    // kD 6
+    0,    // anti-windup
+    1,    // small error range (in)
+    200,  // small error timeout (ms)
+    6,    // large error range (in)
+    400,  // large error timeout (ms)
+    0    // maximum acceleration slew
+);
+
+// ============================================================
+// LemLib Angular PID
+// ============================================================
+// Values are initial tuning values and should be tuned on the
+// completed robot.
+
+lemlib::ControllerSettings angularPID2(
+    1.7,    // kP 2.12
+    0,    // kI
+    5,   // kD 8
+    0,    // anti-windup
+    5,    // small error range (deg)
+    300,  // small error timeout (ms)
+    15,    // large error range (deg)
+    500,  // large error timeout (ms)
+    0   // maximum acceleration slew
+);
+
+// ============================================================
 // LemLib Driver-Control Expo Curves
 // ============================================================
 
@@ -233,10 +251,10 @@ lemlib::Chassis chassis(
     &steer_curve
 );
 
-lemlib::Chassis reverse(
-    drivetrainREVERSE,
-    lateralPID,
-    angularPID,
+lemlib::Chassis chassis2(
+    drivetrain,
+    lateralPID2,
+    angularPID2,
     sensors,
     &throttle_curve,
     &steer_curve

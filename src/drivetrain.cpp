@@ -194,6 +194,7 @@ void matchloaderhight() {
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
 
       lift.setTarget(CascadeLevel::MATCHLOAD);
+      lift.waitUntilSettled(12, 950);
 
       // lift.enable();
     }
@@ -202,7 +203,18 @@ void matchloaderhight() {
   }
 }
 
-// finally it fucking works
+void zerotech() {
+  while (true) {
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+
+      Lift.reset_position();
+
+      // lift.enable();
+    }
+
+    pros::delay(10);
+  }
+}
 
 static bool mac = false;
 void AfterintakeMACRO() {
@@ -223,9 +235,13 @@ void AfterintakeMACRO() {
 
         pros::delay(400);
 
-        lift.setTarget(CascadeLevel::ZERO, 0);
+        lift.setTarget(CascadeLevel::ZERO_DRIVER, 0);
         lift.waitUntilSettled(15, 800);
+
       } else { ////2nd part of the macro
+
+        lift.setTarget(CascadeLevel::NEGATIVE, 0);
+        lift.waitUntilSettled(15, 800);
 
         claw.retract();
         claw1 = false;

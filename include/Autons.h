@@ -13,10 +13,10 @@ struct AutonEntry {
     void (*run)();
 };
 
-void autonNone();
-void autonLeft();
-void autonRight();
-void autonSkills();
+void autonRed();
+void SKILLS();
+void farside();
+void wallPINauto();
 
 extern const AutonEntry AUTONS[];
 extern const int AUTON_COUNT;

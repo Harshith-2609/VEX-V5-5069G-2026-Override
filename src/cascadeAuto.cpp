@@ -15,11 +15,13 @@ double CascadeController::getPosition() {
 
 
 CascadeController lift(cascade, 16, {
+  -12,//-12
+  -30,
   0,
-  -221, 
+  23, 
   4,
-  205, /// CONTROLLER cup and pin height TUNE
-  200, 
+  188, /// CONTROLLER cup and pin height TUNE // 188
+  195, 
   225,// low goal
   325, // SOMETHING
   1450,

@@ -452,4 +452,5 @@ class dsr_chassis {
         /** Drivebase reference */
         dsr_drivebase_abstract* chassis;
 };
- 
+
+extern dsr_chassis dsr_system;
